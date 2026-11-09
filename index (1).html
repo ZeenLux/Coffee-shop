@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kopi Kita - Kelompok 7</title>
+<style>
+body{font-family:Arial;background:#f5f0e8;margin:0;color:#3e2723}
+.container{max-width:400px;margin:60px auto;background:#fff;padding:30px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+input,select{width:100%;padding:12px;margin:8px 0;border:1px solid #ccc;border-radius:8px;box-sizing:border-box}
+button{padding:12px;background:#3e2723;color:#fff;border:0;border-radius:8px;cursor:pointer;font-weight:600}
+.hidden{display:none!important}
+header{background:#3e2723;color:#fff;padding:15px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10}
+.tabs{display:flex;gap:6px;max-width:1000px;margin:15px auto;padding:0 15px}
+.tabs button{padding:8px 16px;border-radius:20px;background:#fff;color:#3e2723;border:1px solid #ddd}
+.tabs button.active{background:#3e2723;color:#fff}
+.menu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:12px;padding:15px;max-width:1000px;margin:auto}
+.card{background:#fff;border-radius:12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.1);padding:12px;display:flex;flex-direction:column}
+.card-top{font-size:50px;line-height:70px;background:#fff7ed;border-radius:10px;margin-bottom:8px}
+.badge{padding:3px 8px;border-radius:20px;font-size:10px;color:#fff;font-weight:bold}
+.badge-kopi{background:#6d4c41}.badge-makanan{background:#ff8f00}.badge-paket{background:#2e7d32}
+.price{font-weight:bold;margin:5px 0;color:#2e7d32}
+.btn-row{display:flex;gap:5px;margin-top:auto}
+.btn-row button{flex:1;font-size:12px;margin-top:6px;padding:8px}
+.del{background:#ffcdd2;color:#b71c1c}.order{background:#2e7d32;color:#fff}
+.add-form{max-width:1000px;margin:15px auto;padding:15px;background:#fff;border-radius:12px;display:flex;gap:8px;flex-wrap:wrap}
+.cart-btn{position:fixed;right:15px;bottom:15px;background:#3e2723;color:#fff;padding:12px 18px;border-radius:30px;z-index:15;box-shadow:0 4px 12px rgba(0,0,0,.3)}
+.cart-modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;justify-content:center;align-items:center;z-index:99}
+.cart-box{background:#fff;width:92%;max-width:440px;padding:18px;border-radius:12px;max-height:90vh;overflow:auto}
+.report-card{background:#fff;padding:15px;border-radius:12px;max-width:1000px;margin:10px auto;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+table{width:100%;border-collapse:collapse;margin-top:8px}th,td{padding:8px;border-bottom:1px solid #eee;font-size:13px;text-align:left}th{background:#f5efe0}
+footer{background:#3e2723;color:#fff;text-align:center;padding:20px;margin-top:30px;line-height:1.6}
+footer b{color:#ffcc80}
+</style>
+</head>
+<body>
+
+<div id="page-login" class="container">
+<h2>☕ Kopi Kita</h2>
+<input id="login-nama" placeholder="Nama"><input id="login-pass" type="password" placeholder="Password">
+<button onclick="login()" style="width:100%">Masuk</button>
+<p><span onclick="showPage('page-daftar')" style="text-decoration:underline;cursor:pointer">Daftar</span> | <span onclick="showPage('page-lupa')" style="text-decoration:underline;cursor:pointer">Lupa Password</span></p>
+<p id="login-msg" style="color:red"></p>
+</div>
+<div id="page-daftar" class="container hidden"><h2>Daftar</h2><input id="reg-nama" placeholder="Nama"><input id="reg-pass" type="password" placeholder="Password"><button onclick="daftar()" style="width:100%">Daftar</button><p onclick="showPage('page-login')" style="text-decoration:underline;cursor:pointer">Kembali</p></div>
+<div id="page-lupa" class="container hidden"><h2>Reset Password</h2><input id="lupa-nama" placeholder="Nama akun"><input id="lupa-newpass" type="password" placeholder="Password baru"><button onclick="resetPassword()" style="width:100%">Reset</button><p onclick="showPage('page-login')" style="text-decoration:underline;cursor:pointer">Kembali</p><p id="lupa-msg"></p></div>
+
+<div id="page-utama" class="hidden">
+<header><b>☕ Halo, <span id="user-nama"></span></b><div><button onclick="showTab('menu')" id="btn-tab-menu" style="background:#ff8f00;width:auto;padding:6px 10px">Menu</button> <button onclick="showTab('laporan')" id="btn-tab-laporan" style="background:#5d4037;width:auto;padding:6px 10px">📊 Laporan</button> <button onclick="logout()" style="width:auto;padding:6px 10px;background:#000">Logout</button></div></header>
+
+<div id="tab-menu">
+<div class="add-form">
+<input id="new-nama" placeholder="Nama menu"><select id="new-kategori"><option value="kopi">Kopi</option><option value="makanan">Makanan</option><option value="paket">Paket Hemat</option></select><input id="new-harga" type="number" placeholder="Harga"><button onclick="tambahMenu()">+ Tambah</button>
+</div>
+<div class="tabs"><button class="active" onclick="filterCat('semua',this)">Semua</button><button onclick="filterCat('kopi',this)">☕ Minuman</button><button onclick="filterCat('makanan',this)">🍽️ Makanan</button><button onclick="filterCat('paket',this)">🎁 Paket</button></div>
+<div class="menu-grid" id="menu-list"></div>
+<div style="max-width:1000px;margin:20px auto;padding:0 15px"><h3>🎁 Paket Hemat (Makanan + Minuman)</h3></div>
+<div class="menu-grid" id="paket-list"></div>
+</div>
+
+<div id="tab-laporan" class="hidden">
+<div class="report-card"><h3 id="lap-omset">Total Omset: Rp 0</h3><p id="lap-info">Transaksi: 0 | Item Terjual: 0</p><button onclick="hapusLaporan()" style="background:#c62828;margin-top:8px">Hapus Laporan</button> <button onclick="exportExcel()" style="background:#2e7d32;margin-top:8px">Export Excel</button></div>
+<div id="laporan-list" style="max-width:1000px;margin:auto;padding:0 15px"></div>
+</div>
+
+<div class="cart-btn" onclick="showCart()">🛒 <span id="cart-count">0</span> - Rp <span id="cart-total">0</span></div>
+<footer><b>☕ KOPI KITA - BY KELOMPOK 7</b><br><br><small>Tugas Projek Coffee Shop</small></footer>
+</div>
+
+<div id="cart-modal" class="cart-modal hidden" onclick="if(event.target===this)hideCart()">
+<div class="cart-box">
+<h3>🛒 Pesanan & Total Bayar</h3>
+<div id="cart-items"></div><hr>
+<div style="display:flex;justify-content:space-between"><span>Subtotal</span><span>Rp <span id="cart-sub">0</span></span></div>
+<div style="display:flex;justify-content:space-between"><span>Pajak 10%</span><span>Rp <span id="cart-pajak">0</span></span></div>
+<h3 style="display:flex;justify-content:space-between"><span>TOTAL</span><span>Rp <span id="cart-total-modal">0</span></span></h3>
+<input id="nama-pembeli" placeholder="Nama pembeli" style="margin-top:10px">
+<button onclick="checkout()" style="width:100%;background:#2e7d32;margin-top:8px">BAYAR SEKARANG</button>
+<button onclick="hideCart()" style="width:100%;background:#777;margin-top:6px">Tutup</button>
+</div>
+</div>
+
+<script>
+function getIcon(nama,kat){
+  let n=nama.toLowerCase();
+  if(kat==='paket') return '🎁';
+  if(kat==='makanan'){
+    if(n.includes('ramen')) return '🍜'; 
+    if(n.includes('sepageti') || n.includes('spageti')) return '🍝'; 
+    if(n.includes('kentang')) return '🍟'; 
+    if(n.includes('nasi goreng')) return '🍛';
+    if(n.includes('donat')) return '🍩'; 
+    if(n.includes('burger')) return '🍔'; 
+    if(n.includes('pisang')) return '🍌';
+    if(n.includes('cireng')) return '🥟';
+    return '🍽️';
+  }else{
+    if(n.includes('susu')) return '🥛'; 
+    if(n.includes('matcha')) return '🍵'; 
+    return '☕';
+  }
+}
+const DEFAULT_MENU=[
+  {nama:"Espresso",harga:18000,kategori:"kopi"},
+  {nama:"Cappuccino",harga:22000,kategori:"kopi"},
+  {nama:"Matcha",harga:20000,kategori:"kopi"},
+  {nama:"Americano",harga:17000,kategori:"kopi"},
+  {nama:"Susu",harga:24000,kategori:"kopi"},
+  {nama:"Spicy Beef Ramen",harga:23000,kategori:"makanan"},
+  {nama:"Pisang Goreng Madu",harga:12000,kategori:"makanan"},
+  {nama:"Kentang Goreng",harga:18000,kategori:"makanan"},
+  {nama:"Nasi Goreng Special",harga:25000,kategori:"makanan"},
+  {nama:"Cireng Ayam Suwir",harga:22000,kategori:"makanan"}
+];
+const DEFAULT_PAKET=[
+  {nama:"Paket Hemat 1 - Nasi + Espresso",harga:35000,kategori:"paket",isi:"Nasi Goreng + Espresso"},
+  {nama:"Paket Ngopi - Roti + Cappuccino",harga:30000,kategori:"paket",isi:"Roti Bakar + Cappuccino"},
+  {nama:"Paket Kenyang - Ayam + Latte",harga:40000,kategori:"paket",isi:"Ayam Krispi + Caramel Latte"}
+];
+
+let saved = JSON.parse(localStorage.getItem('menuKopi')||"null");
+if(!saved || saved.length < 6){localStorage.setItem('menuKopi', JSON.stringify([...DEFAULT_MENU,...DEFAULT_PAKET]));}
+
+let cart=JSON.parse(localStorage.getItem('cart')||"[]");
+let laporan=JSON.parse(localStorage.getItem('laporan')||"[]");
+let curCat='semua';
+
+function showPage(id){['page-login','page-daftar','page-lupa','page-utama'].forEach(p=>document.getElementById(p).classList.add('hidden'));document.getElementById(id).classList.remove('hidden');}
+function showTab(t){document.getElementById('tab-menu').classList.toggle('hidden',t!=='menu');document.getElementById('tab-laporan').classList.toggle('hidden',t!=='laporan');document.getElementById('btn-tab-menu').style.background=t==='menu'?'#ff8f00':'#5d4037';document.getElementById('btn-tab-laporan').style.background=t==='laporan'?'#ff8f00':'#5d4037'; if(t==='laporan') renderLaporan();}
+function filterCat(c,el){curCat=c; document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('active')); el.classList.add('active'); renderMenu();}
+
+function daftar(){let n=document.getElementById('reg-nama').value.trim(),p=document.getElementById('reg-pass').value;if(!n||!p)return alert("Isi!");let u=JSON.parse(localStorage.getItem('users')||"{}");if(u[n])return alert("Sudah ada!");u[n]=p;localStorage.setItem('users',JSON.stringify(u));alert("Berhasil");showPage('page-login');}
+function login(){let n=document.getElementById('login-nama').value.trim(),p=document.getElementById('login-pass').value,u=JSON.parse(localStorage.getItem('users')||"{}");if(u[n]===p){localStorage.setItem('session',n);masukUtama(n);}else document.getElementById('login-msg').innerText="Salah!";}
+function resetPassword(){let n=document.getElementById('lupa-nama').value.trim(),np=document.getElementById('lupa-newpass').value,u=JSON.parse(localStorage.getItem('users')||"{}");if(!u[n])return document.getElementById('lupa-msg').innerText="Tidak ada";u[n]=np;localStorage.setItem('users',JSON.stringify(u));document.getElementById('lupa-msg').innerText="Berhasil!";}
+function logout(){localStorage.removeItem('session');showPage('page-login');}
+function masukUtama(n){document.getElementById('user-nama').innerText=n;showPage('page-utama');renderMenu();updateCartUI();renderLaporan();}
+function getMenu(){return JSON.parse(localStorage.getItem('menuKopi'));}
+function saveMenu(m){localStorage.setItem('menuKopi',JSON.stringify(m));}
+function renderMenu(){
+  let menu=getMenu();
+  let filtered = curCat==='semua'? menu.filter(m=>m.kategori!=='paket') : menu.filter(m=>m.kategori===curCat);
+  document.getElementById('menu-list').innerHTML=filtered.map((m,i)=>{
+    let realIndex = menu.indexOf(m);
+    return `<div class="card"><div class="card-top">${getIcon(m.nama,m.kategori)}</div><span class="badge badge-${m.kategori}">${m.kategori.toUpperCase()}</span><h4 style="margin:6px 0">${m.nama}</h4>${m.isi?`<small>${m.isi}</small>`:''}<div class="price">Rp ${m.harga.toLocaleString('id-ID')}</div><div class="btn-row"><button class="order" onclick="pesanMenu(${realIndex})">Pesan</button><button onclick="editMenu(${realIndex})">Edit</button><button class="del" onclick="hapusMenu(${realIndex})">X</button></div></div>`
+  }).join('');
+  document.getElementById('paket-list').innerHTML=menu.filter(m=>m.kategori==='paket').map((m,i)=>{
+    let realIndex = menu.indexOf(m);
+    return `<div class="card" style="border:2px solid #2e7d32"><div class="card-top">🎁</div><span class="badge badge-paket">PAKET HEMAT</span><h4 style="margin:6px 0">${m.nama}</h4><small>${m.isi||'Makanan + Minuman'}</small><div class="price">Rp ${m.harga.toLocaleString('id-ID')}</div><div class="btn-row"><button class="order" onclick="pesanMenu(${realIndex})">Pesan Paket</button><button class="del" onclick="hapusMenu(${realIndex})">X</button></div></div>`
+  }).join('');
+}
+function tambahMenu(){let n=document.getElementById('new-nama').value.trim(),h=parseInt(document.getElementById('new-harga').value),k=document.getElementById('new-kategori').value;if(!n||!h)return alert("Isi!");let m=getMenu();m.push({nama:n,harga:h,kategori:k, isi:k==='paket'?'Paket Makanan + Minuman':''});saveMenu(m);renderMenu();document.getElementById('new-nama').value="";document.getElementById('new-harga').value="";}
+function hapusMenu(i){if(!confirm("Hapus?"))return;let m=getMenu();m.splice(i,1);saveMenu(m);renderMenu();}
+function editMenu(i){let m=getMenu(),nn=prompt("Nama:",m[i].nama),hh=prompt("Harga:",m[i].harga);if(nn&&hh){m[i].nama=nn;m[i].harga=parseInt(hh);saveMenu(m);renderMenu();}}
+function pesanMenu(i){let menu=getMenu()[i],ex=cart.find(c=>c.nama===menu.nama);if(ex)ex.qty++;else cart.push({...menu,qty:1});localStorage.setItem('cart',JSON.stringify(cart));updateCartUI();}
+function updateCartUI(){
+  let sub=cart.reduce((s,c)=>s+c.harga*c.qty,0), pajak=Math.round(sub*0.1), total=sub+pajak, count=cart.reduce((s,c)=>s+c.qty,0);
+  document.getElementById('cart-count').innerText=count;
+  document.getElementById('cart-total').innerText=total.toLocaleString('id-ID');
+  document.getElementById('cart-sub').innerText=sub.toLocaleString('id-ID');
+  document.getElementById('cart-pajak').innerText=pajak.toLocaleString('id-ID');
+  document.getElementById('cart-total-modal').innerText=total.toLocaleString('id-ID');
+  document.getElementById('cart-items').innerHTML=cart.map((c,i)=>`<div style="display:flex;justify-content:space-between;border-bottom:1px solid #eee;padding:6px 0"><div>${getIcon(c.nama,c.kategori)} ${c.nama}<br><small>Rp ${c.harga} x ${c.qty}</small></div><div><button onclick="ubahQty(${i},1)">+</button> <button onclick="ubahQty(${i},-1)">-</button></div></div>`).join('')||"Belum ada pesanan";
+}
+function ubahQty(i,d){cart[i].qty+=d;if(cart[i].qty<=0)cart.splice(i,1);localStorage.setItem('cart',JSON.stringify(cart));updateCartUI();}
+function showCart(){document.getElementById('cart-modal').classList.remove('hidden');updateCartUI();}
+function hideCart(){document.getElementById('cart-modal').classList.add('hidden');}
+function checkout(){
+  if(cart.length==0) return alert("Kosong!");
+  let pembeli=document.getElementById('nama-pembeli').value.trim()||document.getElementById('user-nama').innerText;
+  let sub=cart.reduce((s,c)=>s+c.harga*c.qty,0), pajak=Math.round(sub*0.1), total=sub+pajak;
+  let trx={id:"TRX"+Date.now().toString().slice(-5), pembeli, waktu:new Date().toLocaleString('id-ID'), sub, pajak, total, items:[...cart]};
+  laporan.unshift(trx); localStorage.setItem('laporan',JSON.stringify(laporan));
+  alert("✅ Pembayaran Berhasil!\nTotal Bayar: Rp "+total.toLocaleString('id-ID')+"\nPembeli: "+pembeli);
+  cart=[];localStorage.setItem('cart',JSON.stringify(cart));updateCartUI();hideCart();renderLaporan();showTab('laporan');
+}
+function renderLaporan(){
+  let omset=laporan.reduce((s,t)=>s+t.total,0), item=laporan.reduce((s,t)=>s+t.items.reduce((a,b)=>a+b.qty,0),0);
+  document.getElementById('lap-omset').innerText="Total Omset: Rp "+omset.toLocaleString('id-ID');
+  document.getElementById('lap-info').innerText=`Transaksi: ${laporan.length} | Item Terjual: ${item}`;
+  document.getElementById('laporan-list').innerHTML=laporan.map(t=>`
+    <div class="report-card"><b>${t.id}</b> - ${t.pembeli} <small>${t.waktu}</small><br>
+    <table><tr><th>Menu</th><th>Qty</th><th>Harga</th></tr>
+    ${t.items.map(it=>`<tr><td>${it.nama} ${it.kategori==='paket'?'🎁':''}</td><td>${it.qty}</td><td>Rp ${(it.harga*it.qty).toLocaleString()}</td></tr>`).join('')}
+    <tr><th colspan="2">TOTAL BAYAR</th><th>Rp ${t.total.toLocaleString()}</th></tr></table></div>`).join('')||"<p style='text-align:center'>Belum ada laporan</p>";
+}
+function hapusLaporan(){if(confirm("Hapus semua laporan?")){laporan=[];localStorage.setItem('laporan',JSON.stringify(laporan));renderLaporan();}}
+function exportExcel(){
+  let csv="ID,Pembeli,Waktu,Menu,Qty,Total\n"+laporan.map(t=>t.items.map(it=>`${t.id},${t.pembeli},${t.waktu},${it.nama},${it.qty},${t.total}`).join("\n")).join("\n");
+  let blob=new Blob([csv],{type:'text/csv'}), a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download="laporan-kelompok7.csv"; a.click();
+}
+let s=localStorage.getItem('session');if(s)masukUtama(s);
+</script>
+</body>
+</html>
